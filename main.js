@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { Client } = require('whatsapp-web.js');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const { GoogleGenerativeAI} = require("@google/generative-ai");
 const { GoogleAIFileManager } = require("@google/generative-ai/server");
 const qrcode = require('qrcode-terminal');
@@ -14,12 +14,12 @@ async function uploadToGemini(path, mimeType) {
     displayName: path,
   });
   const file = uploadResult.file;
-  console.log(`Uploaded file ${file.displayName} as: ${file.name}`);
+  console.log(`Arquivo enviado ${file.displayName} as: ${file.name}`);
   return file;
 }
 
 async function waitForFilesActive(files) {
-  console.log("Waiting for file processing...");
+  console.log("Processando pdf...");
   for (const name of files.map((file) => file.name)) {
     let file = await fileManager.getFile(name);
     while (file.state === "PROCESSING") {
@@ -28,10 +28,10 @@ async function waitForFilesActive(files) {
       file = await fileManager.getFile(name)
     }
     if (file.state !== "ACTIVE") {
-      throw Error(`File ${file.name} failed to process`);
+      throw Error(`${file.name} falhou ao processar`);
     }
   }
-  console.log("...all files ready\n");
+  console.log("Arquivo está pronto\n");
 }
 
 const model = genAI.getGenerativeModel({
@@ -40,7 +40,7 @@ const model = genAI.getGenerativeModel({
 });
 
 const generationConfig = {
-  temperature: 1,
+  temperature: 2,
   topP: 0,
   topK: 40,
   maxOutputTokens: 8192,
@@ -48,11 +48,9 @@ const generationConfig = {
 };
 
 async function run(prompt) {
-  const files = [
-    await uploadToGemini("DadosSF.pdf", "application/pdf"),
-  ];
-  await waitForFilesActive(files);
-
+  if (!uploadedFile) {
+    throw new Error("Arquivo PDF não foi carregado!");
+  }
   const chatSession = model.startChat({
     generationConfig,
     history: [
@@ -61,31 +59,42 @@ async function run(prompt) {
         parts: [
           {
             fileData: {
-              mimeType: files[0].mimeType,
-              fileUri: files[0].uri,
+              mimeType: uploadedFile.mimeType,
+              fileUri: uploadedFile.uri,
             },
           },
-          {text: "Responda apenas com base nas seguintes informações:"},
+          { text: "Responda apenas com base nas seguintes informações:" },
         ],
       },
     ],
   });
-
   const result = await chatSession.sendMessage(prompt);
   return (result.response.text());
 }
 
-// run();
+const client = new Client({
+  authStrategy: new LocalAuth(), 
+  puppeteer: {
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  },
+});
 
-const client = new Client();
 
 client.on('qr', qr => {
   qrcode.generate(qr, { small: true });
 });
 
-client.on('ready', () => {
-  console.log('Client is ready!');
+client.on('ready', async () => {
+  console.log('O cliente está pronto!');
+
+  try {
+    uploadedFile = await uploadToGemini("DadosSF.pdf", "application/pdf");
+    await waitForFilesActive([uploadedFile]);
+  } catch (error) {
+    console.error("Erro ao carregar o arquivo PDF:", error);
+  }
 });
+
 
 client.on('message_create', async message => {
     if (message.fromMe) return;
