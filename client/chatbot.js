@@ -1,6 +1,9 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const { uploadToGemini, waitForFilesActive } = require('../useCase/sendFile.js');
+const { run } = require('../useCase/sendMessageToAI.js');
+const fs = require('fs');
+const path = require('path');
 
 const client = new Client({
     authStrategy: new LocalAuth(), 
@@ -20,6 +23,12 @@ const client = new Client({
     try {
       const uploadedFile = await uploadToGemini("DadosSF.pdf", "application/pdf");
       await waitForFilesActive([uploadedFile]);
+      fs.writeFile(path.resolve(__dirname,"..", "data.txt"), `${uploadedFile.mimeType}\n${uploadedFile.uri}`, function(err) {
+        if(err) {
+            return console.log(err);
+        }
+        console.log("The file was saved!");
+    }); 
     } catch (error) {
       console.error("Erro ao carregar o arquivo PDF:", error);
     }

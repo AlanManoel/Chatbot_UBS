@@ -1,0 +1,2 @@
+application/pdf
+https://generativelanguage.googleapis.com/v1beta/files/7rtrhb0k7iux
