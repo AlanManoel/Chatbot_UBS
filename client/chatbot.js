@@ -6,15 +6,15 @@ const fs = require('fs');
 const path = require('path');
 
 const saveNumber = (number) => {
-  const numbersFile = path.resolve(__dirname, "..", "numbers.text");
+  const numbersFile = path.resolve(__dirname, "..", "numbers.txt");
 
-  fs.readFile(numbersFile, "utf-8", (err, data) => {
+  fs.writeFile(numbersFile, "utf-8", (err, data) => {
     if (err && err.code !== 'ENOENT') {
       console.error("Error reading file:", err);
       return;
     }
     if (!data || !data.includes(number)) {
-      fs.appendFile(numbersFile, number, + "\n", (err) => {
+      fs.appendFile(numbersFile, number + "\n", (err) => {
         if (err) {
           return console.log(err);
         } else {
