@@ -4,15 +4,17 @@ const { uploadToGemini, waitForFilesActive } = require('../useCase/sendFile.js')
 const { run } = require('../useCase/sendMessageToAI.js');
 const fs = require('fs');
 const path = require('path');
+const sendBulkMessage = require("../useCase/sendAutomaticMessage.js")
 
 const saveNumber = (number) => {
   const numbersFile = path.resolve(__dirname, "..", "numbers.txt");
 
-  fs.writeFile(numbersFile, "utf-8", (err, data) => {
+  fs.readFile(numbersFile, "utf-8", (err, data) => {
     if (err && err.code !== 'ENOENT') {
       console.error("Error reading file:", err);
       return;
     }
+
     if (!data || !data.includes(number)) {
       fs.appendFile(numbersFile, number + "\n", (err) => {
         if (err) {
@@ -56,7 +58,6 @@ client.on('ready', async () => {
   }
 });
 
-
 client.on('message_create', async message => {
   if (message.fromMe) return;
   const senderNumber = message.from;
@@ -64,18 +65,21 @@ client.on('message_create', async message => {
   saveNumber(senderNumber);
 
   console.log(message.body);
+  if (message.body === "/ok") {
+    sendBulkMessage(client);
+  } else {
+    if (message.body) {
+      const result = await run(message.body);
+      console.log(result);
 
-  if (message.body) {
-    const result = await run(message.body);
-    console.log(result);
-
-    try {
-      await message.reply(result);
-    } catch (error) {
-      console.error("Erro ao enviar mensagem:", error);
+      try {
+        await message.reply(result);
+      } catch (error) {
+        console.error("Erro ao enviar mensagem:", error);
+      }
     }
   }
-});
 
+});
 
 module.exports = { client }
