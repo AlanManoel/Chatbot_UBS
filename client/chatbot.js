@@ -65,8 +65,14 @@ client.on('message_create', async message => {
   saveNumber(senderNumber);
 
   console.log(message.body);
-  if (message.body === "/ok") {
-    sendBulkMessage(client);
+  if (message.body === "/enviarInformativo" && senderNumber === "558694575010@c.us") {
+    await message.reply("Digite o informativo que você deseja enviar para todos os números.");
+
+    client.once("message", async (infoMessage)=>{
+      const info = infoMessage.body;
+      await sendBulkMessage(client, info);
+      await infoMessage.reply("O informativo foi enviado para todos os números salvos.");
+    });
   } else {
     if (message.body) {
       const result = await run(message.body);
