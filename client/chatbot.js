@@ -45,7 +45,7 @@ client.on('ready', async () => {
   console.log('O cliente está pronto!');
 
   try {
-    const uploadedFile = await uploadToGemini("DadosSF.pdf", "application/pdf");
+    const uploadedFile = await uploadToGemini("./docs/DadosSF.pdf", "application/pdf");
     await waitForFilesActive([uploadedFile]);
     fs.writeFile(path.resolve(__dirname, "..", "data.txt"), `${uploadedFile.mimeType}\n${uploadedFile.uri}`, function (err) {
       if (err) {
