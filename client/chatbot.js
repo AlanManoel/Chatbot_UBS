@@ -4,30 +4,8 @@ const { uploadToGemini, waitForFilesActive } = require('../useCase/sendFile.js')
 const { run } = require('../useCase/sendMessageToAI.js');
 const fs = require('fs');
 const path = require('path');
-const sendBulkMessage = require("../useCase/sendAutomaticMessage.js")
-
-const saveNumber = (number) => {
-  const numbersFile = path.resolve(__dirname, "..", "numbers.txt");
-
-  fs.readFile(numbersFile, "utf-8", (err, data) => {
-    if (err && err.code !== 'ENOENT') {
-      console.error("Error reading file:", err);
-      return;
-    }
-
-    if (!data || !data.includes(number)) {
-      fs.appendFile(numbersFile, number + "\n", (err) => {
-        if (err) {
-          return console.log(err);
-        } else {
-          console.log(`Number: ${number} was saved!`)
-        }
-      });
-    } else {
-      console.log(`Number ${number} is already saved!`);
-    }
-  });
-}
+const sendBulkMessage = require("../useCase/sendAutomaticMessage.js");
+const saveNumberJS = require("../useCase/saveNumber.js");
 
 const client = new Client({
   authStrategy: new LocalAuth(),
@@ -35,7 +13,6 @@ const client = new Client({
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   },
 });
-
 
 client.on('qr', qr => {
   qrcode.generate(qr, { small: true });
@@ -51,7 +28,7 @@ client.on('ready', async () => {
       if (err) {
         return console.log(err);
       }
-      console.log("The file was saved!");
+      console.log("O arquivo foi salvo!");
     });
   } catch (error) {
     console.error("Erro ao carregar o arquivo PDF:", error);
@@ -62,7 +39,7 @@ client.on('message_create', async message => {
   if (message.fromMe) return;
   const senderNumber = message.from;
 
-  saveNumber(senderNumber);
+  saveNumberJS(senderNumber);
 
   console.log(message.body);
   if (message.body === "/enviarInformativo" && senderNumber === "558694575010@c.us") {
