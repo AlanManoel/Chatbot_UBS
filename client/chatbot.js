@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const sendBulkMessage = require("../useCase/sendAutomaticMessage.js");
 const saveNumberJS = require("../useCase/saveNumber.js");
+const messages = require("../messages/infoMessage.js")
 
 const client = new Client({
   authStrategy: new LocalAuth(),
@@ -43,13 +44,14 @@ client.on('message_create', async message => {
 
   console.log(message.body);
   if (message.body === "/enviarInformativo" && senderNumber === "558694575010@c.us") {
-    await message.reply("Digite o informativo que você deseja enviar para todos os números.");
+    await message.reply(messages.MESSAGE_REQUEST);
 
-    client.once("message", async (infoMessage)=>{
+    client.once("message", async (infoMessage) => {
       const info = infoMessage.body;
       await sendBulkMessage(client, info);
-      await infoMessage.reply("O informativo foi enviado para todos os números salvos.");
+      await infoMessage.reply(messages.MESSAGE_CONFIRMATION);
     });
+
   } else {
     if (message.body) {
       const result = await run(message.body);
