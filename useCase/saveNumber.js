@@ -1,22 +1,26 @@
 const fs = require('fs');
 const path = require('path');
-const isNumberSaved = require("./isNumberSaved");
 
-const saveNumber = (number) => {
-    const numbersFile = path.resolve(__dirname, "..", "numbers.txt");
 
-    if (isNumberSaved(number)) {
+const saveNumber = (number, name) => {
+    const numbersFile = path.resolve(__dirname, "..", "numbers.json");
+
+
+    let users = {};
+    if (fs.existsSync(numbersFile)) {
+        const data = fs.readFileSync(numbersFile, "utf-8");
+        users = JSON.parse(data);
+    }
+
+    if (users[number]) {
         console.log(`O número ${number} já está salvo.`);
         return;
     }
 
-    fs.appendFile(numbersFile, number + "\n", (err) => {
-        if (err) {
-            return console.log(err);
-        } else {
-            console.log(`O número: ${number} foi salvo.`)
-        }
-    });
+    users[number] = name;
+
+    fs.writeFileSync(numbersFile, JSON.stringify(users, null, 2));
+    console.log(`O número: ${number} foi salvo.`);
 }
 
-module.exports = saveNumber;
+module.exports = { saveNumber };
