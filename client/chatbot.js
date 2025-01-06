@@ -4,9 +4,12 @@ const { uploadToGemini, waitForFilesActive } = require('../useCase/sendFile.js')
 const { run } = require('../useCase/sendMessageToAI.js');
 const fs = require('fs');
 const path = require('path');
-const sendBulkMessage = require("../useCase/sendAutomaticMessage.js");
-const saveNumberJS = require("../useCase/saveNumber.js");
-const messages = require("../messages/infoMessage.js")
+const { sendBulkMessage } = require("../useCase/sendAutomaticMessage.js");
+const { saveNumberJS } = require("../useCase/saveNumber.js");
+const messages = require("../messages/infoMessage.js");
+const { loadUsers } = require("../useCase/loadUser.js");
+
+const users = loadUsers();
 
 const client = new Client({
   authStrategy: new LocalAuth(),
@@ -40,31 +43,56 @@ client.on('message_create', async message => {
   if (message.fromMe) return;
   const senderNumber = message.from;
 
-  saveNumberJS(senderNumber);
+  if (!users[senderNumber]) {
 
-  console.log(message.body);
-  if (message.body === "/enviarInformativo" && senderNumber === "558694575010@c.us") {
-    await message.reply(messages.MESSAGE_REQUEST);
+    if (!users.pendingRegistration) {
+      users.pendingRegistration = {};
+    }
 
-    client.once("message", async (infoMessage) => {
-      const info = infoMessage.body;
-      await sendBulkMessage(client, info);
-      await infoMessage.reply(messages.MESSAGE_CONFIRMATION);
-    });
+    if (!users.pendingRegistration[senderNumber]) {
+      users.pendingRegistration[senderNumber] = true;
+      await message.reply(messages.MESSAGE_GREETING);
+      client.sendMessage(senderNumber, messages.MESSAGE_ASKNAME);
+    }
+
+    const nameListener = async (nameMessage) => {
+      if (nameMessage.from === senderNumber && users.pendingRegistration[senderNumber]) {
+        const userName = nameMessage.body.trim();
+
+        users[senderNumber] = userName;
+        delete users.pendingRegistration[senderNumber];
+        saveNumberJS(senderNumber, userName);
+
+        await nameMessage.reply(`Prazer em conhecê-lo(a), ${userName}!\nAgora é só enviar suas dúvidas ou informações que deseja saber.`);
+
+        client.removeListener('message_create', nameListener);
+      }
+    };
+
+    client.on('message_create', nameListener);
 
   } else {
-    if (message.body) {
-      const result = await run(message.body);
-      console.log(result);
+    if (message.body === "/enviarInformativo" && senderNumber === "558694575010@c.us") {
+      await message.reply(messages.MESSAGE_REQUEST);
 
-      try {
-        await message.reply(result);
-      } catch (error) {
-        console.error("Erro ao enviar mensagem:", error);
+      client.once("message", async (infoMessage) => {
+        const info = infoMessage.body;
+        await sendBulkMessage(client, info);
+        await infoMessage.reply(messages.MESSAGE_CONFIRMATION);
+      });
+    } else {
+      if (message.body) {
+        const result = await run(message.body);
+        console.log(result);
+
+        try {
+          await message.reply(result.trim());
+        } catch (error) {
+          console.error("Erro ao enviar mensagem:", error);
+        }
       }
     }
   }
-
 });
 
 module.exports = { client }
