@@ -4,12 +4,13 @@ const { uploadToGemini, waitForFilesActive } = require('../useCase/sendFile.js')
 const { run } = require('../useCase/sendMessageToAI.js');
 const fs = require('fs');
 const path = require('path');
-const { sendBulkMessage } = require("../useCase/sendAutomaticMessage.js");
-const { saveNumberJS } = require("../useCase/saveNumber.js");
+const sendBulkMessage = require("../useCase/sendAutomaticMessage.js");
+const saveNumberJS = require("../useCase/saveNumber.js");
 const messages = require("../messages/infoMessage.js");
 const { loadUsers } = require("../useCase/loadUser.js");
 
 const users = loadUsers();
+const feedbackRequests = {};
 
 const client = new Client({
   authStrategy: new LocalAuth(),
@@ -68,10 +69,22 @@ client.on('message_create', async message => {
         client.removeListener('message_create', nameListener);
       }
     };
-
     client.on('message_create', nameListener);
 
   } else {
+    if (feedbackRequests[senderNumber] === "feedbackPending" && message.body) {
+      const rating = parseInt(message.body.trim(), 10);
+
+      if (rating >= 1 && rating <= 5) {
+        await message.reply(messages.EVALUATION_CONFIRMATION_MESSAGE);
+        feedbackRequests[senderNumber] = "feedbackCompleted";
+        return;
+      } else {
+        await message.reply(messages.REQUEST_RATING_MESSAGE);
+        return;
+      }
+    }
+
     if (message.body === "/enviarInformativo" && senderNumber === "558694575010@c.us") {
       await message.reply(messages.MESSAGE_REQUEST);
 
@@ -87,6 +100,12 @@ client.on('message_create', async message => {
 
         try {
           await message.reply(result.trim());
+          setTimeout(async () => {
+            if (!feedbackRequests[senderNumber]) {
+              await message.reply(messages.EVALUATION_REQUEST_MESSAGE);
+              feedbackRequests[senderNumber] = "feedbackPending";
+            }
+          }, 5000);
         } catch (error) {
           console.error("Erro ao enviar mensagem:", error);
         }
