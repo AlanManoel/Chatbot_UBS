@@ -23,4 +23,4 @@ const saveNumber = (number, name) => {
     console.log(`O número: ${number} foi salvo.`);
 }
 
-module.exports = { saveNumber };
+module.exports = saveNumber;
