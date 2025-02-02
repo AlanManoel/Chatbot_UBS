@@ -5,11 +5,12 @@ const { run } = require('../useCase/sendMessageToAI.js');
 const fs = require('fs');
 const path = require('path');
 const sendBulkMessage = require("../useCase/sendAutomaticMessage.js");
-const saveNumberJS = require("../useCase/saveNumber.js");
+const { saveNumber } = require("../useCase/saveNumber.js");
 const messages = require("../messages/infoMessage.js");
 const { loadUsers } = require("../useCase/loadUser.js");
+const { findUser } = require("../useCase/findUser.js");
 
-const users = loadUsers();
+// const users = loadUsers();
 const feedbackRequests = {};
 
 const client = new Client({
@@ -43,34 +44,33 @@ client.on('ready', async () => {
 client.on('message_create', async message => {
   if (message.fromMe) return;
   const senderNumber = message.from;
+  const user = await findUser(senderNumber);
+  console.log(`Usuario carregado: ${user.nome}`)
 
-  if (!users[senderNumber]) {
-
-    if (!users.pendingRegistration) {
-      users.pendingRegistration = {};
+  if (!user) {
+    if (!global.pendingRegistrations) {
+      global.pendingRegistrations = {};
     }
 
-    if (!users.pendingRegistration[senderNumber]) {
-      users.pendingRegistration[senderNumber] = true;
+    if (!global.pendingRegistrations[senderNumber]) {
+      global.pendingRegistrations[senderNumber] = true;
       await message.reply(messages.MESSAGE_GREETING);
       client.sendMessage(senderNumber, messages.MESSAGE_ASKNAME);
+
+      const nameListener = async (nameMessage) => {
+        if (nameMessage.from === senderNumber && global.pendingRegistrations[senderNumber]) {
+          const userName = nameMessage.body.trim();
+
+          await saveNumber(userName, senderNumber);
+          await nameMessage.reply(`Prazer em conhecê-lo(a), ${userName}!\nAgora é só enviar suas dúvidas ou informações que deseja saber.`);
+
+          delete global.pendingRegistrations[senderNumber];
+          client.removeListener('message_create', nameListener);
+        }
+      };
+
+      client.on('message_create', nameListener);
     }
-
-    const nameListener = async (nameMessage) => {
-      if (nameMessage.from === senderNumber && users.pendingRegistration[senderNumber]) {
-        const userName = nameMessage.body.trim();
-
-        users[senderNumber] = userName;
-        delete users.pendingRegistration[senderNumber];
-        saveNumberJS(senderNumber, userName);
-
-        await nameMessage.reply(`Prazer em conhecê-lo(a), ${userName}!\nAgora é só enviar suas dúvidas ou informações que deseja saber.`);
-
-        client.removeListener('message_create', nameListener);
-      }
-    };
-    client.on('message_create', nameListener);
-
   } else {
     if (feedbackRequests[senderNumber] === "feedbackPending" && message.body) {
       const rating = parseInt(message.body.trim(), 10);
