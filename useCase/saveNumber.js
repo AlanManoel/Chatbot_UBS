@@ -1,26 +1,20 @@
-const fs = require('fs');
-const path = require('path');
 
+require('dotenv').config();
 
-const saveNumber = (number, name) => {
-    const numbersFile = path.resolve(__dirname, "..", "numbers.json");
+const axios = require("axios");
+const url = process.env.API_URL + "/users/";
 
+const saveNumber = async (nome, telefone) => {
+    const userData = {
+        nome, telefone
+    };
 
-    let users = {};
-    if (fs.existsSync(numbersFile)) {
-        const data = fs.readFileSync(numbersFile, "utf-8");
-        users = JSON.parse(data);
+    try {
+        await axios.post(url, userData);
+    } catch (error) {
+        console.error("Erro ao salvar no banco:", error);
+        throw new Error("Erro ao salvar no banco de dados");
     }
-
-    if (users[number]) {
-        console.log(`O número ${number} já está salvo.`);
-        return;
-    }
-
-    users[number] = name;
-
-    fs.writeFileSync(numbersFile, JSON.stringify(users, null, 2));
-    console.log(`O número: ${number} foi salvo.`);
 }
 
-module.exports = saveNumber;
+module.exports = { saveNumber };
