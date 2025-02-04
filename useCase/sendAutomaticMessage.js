@@ -1,17 +1,20 @@
-const fs = require('fs');
+const { loadUsers } = require("../useCase/loadUsers");
 
-async function sendBulkMessage(client, message) {
-    const fileData = await fs.promises.readFile("numbers.txt", "utf-8");
-    const numbers = fileData.split("\n").map(number => number.trim()).filter(Boolean);
-    const messageText = message;
-    for (const number of numbers) {
+const sendAutomaticMessage = async (client, message) => {
+  try {
+    const users = await loadUsers();
+
+    for (const user of users) {
       try {
-        await client.sendMessage(number, messageText);
-        console.log(`Mensagem enviada para: ${number}`);
+        await client.sendMessage(user.telefone, message);
+        console.log(`Mensagem enviada para: ${user.telefone}`);
       } catch (error) {
-        console.error(`Erro ao enviar para ${number}:`, error);
+        console.error(`Erro ao enviar para ${user.telefone}:`, error);
       }
     }
+  } catch (e) {
+    return;
   }
+}
 
-module.exports = sendBulkMessage;
+module.exports = { sendAutomaticMessage }
