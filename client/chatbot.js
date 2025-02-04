@@ -94,6 +94,9 @@ client.on('message_create', async message => {
       });
     } else {
       if (message.body) {
+        const chat = await client.getChatById(senderNumber); //Status digitando
+        chat.sendStateTyping();
+
         const result = await run(message.body);
 
         try {
