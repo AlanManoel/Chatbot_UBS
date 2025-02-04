@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs");
 const path = require("path");
+const { client } = require("../client/chatbot");
 const genAI = new GoogleGenerativeAI(process.env.API_GEMINI);
 
 const systemInstructions = `
@@ -21,7 +22,7 @@ Importante: Você nunca deve inventar respostas nem adicionar informações que 
 
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
-  systemInstruction: "Responda somente conforme as informações passadas",
+  systemInstruction: systemInstructions,
 });
 
 const generationConfig = {
