@@ -4,7 +4,7 @@ const { uploadToGemini, waitForFilesActive } = require('../useCase/sendFile.js')
 const { run } = require('../useCase/sendMessageToAI.js');
 const fs = require('fs');
 const path = require('path');
-const sendBulkMessage = require("../useCase/sendAutomaticMessage.js");
+const { sendAutomaticMessage } = require("../useCase/sendAutomaticMessage.js");
 const { saveNumber } = require("../useCase/saveNumber.js");
 const messages = require("../messages/infoMessage.js");
 const { findUser } = require("../useCase/findUser.js");
@@ -89,7 +89,7 @@ client.on('message_create', async message => {
 
       client.once("message", async (infoMessage) => {
         const info = infoMessage.body;
-        await sendBulkMessage(client, info);
+        await sendAutomaticMessage(client, info);
         await infoMessage.reply(messages.MESSAGE_CONFIRMATION);
       });
     } else {
