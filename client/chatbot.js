@@ -7,10 +7,9 @@ const path = require('path');
 const sendBulkMessage = require("../useCase/sendAutomaticMessage.js");
 const { saveNumber } = require("../useCase/saveNumber.js");
 const messages = require("../messages/infoMessage.js");
-const { loadUsers } = require("../useCase/loadUser.js");
 const { findUser } = require("../useCase/findUser.js");
+const { updateFeedback } = require('../useCase/updateFeedback.js');
 
-// const users = loadUsers();
 const feedbackRequests = {};
 
 const client = new Client({
@@ -45,7 +44,6 @@ client.on('message_create', async message => {
   if (message.fromMe) return;
   const senderNumber = message.from;
   const user = await findUser(senderNumber);
-  console.log(`Usuario carregado: ${user.nome}`)
 
   if (!user) {
     if (!global.pendingRegistrations) {
@@ -78,6 +76,7 @@ client.on('message_create', async message => {
       if (rating >= 1 && rating <= 5) {
         await message.reply(messages.EVALUATION_CONFIRMATION_MESSAGE);
         feedbackRequests[senderNumber] = "feedbackCompleted";
+        await updateFeedback(user, rating);
         return;
       } else {
         await message.reply(messages.REQUEST_RATING_MESSAGE);
@@ -96,12 +95,11 @@ client.on('message_create', async message => {
     } else {
       if (message.body) {
         const result = await run(message.body);
-        console.log(result);
 
         try {
           await message.reply(result.trim());
           setTimeout(async () => {
-            if (!feedbackRequests[senderNumber]) {
+            if (!feedbackRequests[senderNumber] && !user.avaliacao) {
               await message.reply(messages.EVALUATION_REQUEST_MESSAGE);
               feedbackRequests[senderNumber] = "feedbackPending";
             }
