@@ -9,6 +9,7 @@ const { saveNumber } = require("../useCase/saveNumber.js");
 const messages = require("../messages/infoMessage.js");
 const { findUser } = require("../useCase/findUser.js");
 const { updateFeedback } = require('../useCase/updateFeedback.js');
+const { saveNewFile } = require('../useCase/saveNewFile.js')
 
 const feedbackRequests = {};
 
@@ -84,7 +85,7 @@ client.on('message_create', async message => {
       }
     }
 
-    if (message.body === "/enviarInformativo" && senderNumber === "558694575010@c.us") {
+    if (message.body === "/enviarInformativo" && senderNumber === process.env.NUMBER_ADM) {
       await message.reply(messages.MESSAGE_REQUEST);
 
       client.once("message", async (infoMessage) => {
@@ -92,6 +93,20 @@ client.on('message_create', async message => {
         await sendAutomaticMessage(client, info);
         await infoMessage.reply(messages.MESSAGE_CONFIRMATION);
       });
+    } else if (message.body === "/novoDocumento" && senderNumber == process.env.NUMBER_ADM) {
+      await message.reply("Envie o novo documento:");
+      client.once("message", async (media) => {
+        if (media.hasMedia) {
+          const docs = await media.downloadMedia();
+          try {
+            await saveNewFile(docs);
+            await message.reply(`O novo arquivo foi salvo e enviado ao Gemini com sucesso!`);
+          } catch (error) {
+            await message.reply("Houve um erro ao processar o arquivo. Tente novamente.");
+          }
+        }
+      });
+
     } else {
       if (message.body) {
         const chat = await client.getChatById(senderNumber); //Status digitando
@@ -106,7 +121,7 @@ client.on('message_create', async message => {
               await message.reply(messages.EVALUATION_REQUEST_MESSAGE);
               feedbackRequests[senderNumber] = "feedbackPending";
             }
-          }, 5000);
+          }, 90000);
         } catch (error) {
           console.error("Erro ao enviar mensagem:", error);
         }
