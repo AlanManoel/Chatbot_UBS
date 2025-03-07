@@ -11,6 +11,15 @@ const EVALUATION_REQUEST_MESSAGE =
     "4 - Muito satisfeito 😄\n" +
     "5 - Excelente! 🌟";
 const REQUEST_RATING_MESSAGE = "Por favor, forneça uma nota de 1 a 5.";
+const MESSAGE_COMMAND =
+    "✅ Para enviar um informativo a todos os usuários, digite: */enviarInformativo* e envie a mensagem desejada.\n" +
+    "📄 Para cadastrar um novo documento, digite: */novoDocumento* e envie o novo arquivo para processamento.";
+const MESSAGE_NEW_DOCUMENT = "📄 Envie o novo documento:";
+const MESSAGE_DOCUMENT_SAVED = "✅ O novo arquivo foi salvo e enviado com sucesso!";
+const MESSAGE_DOCUMENT_ERROR = "❌ Houve um erro ao processar o arquivo. Tente novamente.";
+
+
+
 
 module.exports = {
     MESSAGE_REQUEST,
@@ -19,5 +28,9 @@ module.exports = {
     MESSAGE_ASKNAME,
     EVALUATION_CONFIRMATION_MESSAGE,
     EVALUATION_REQUEST_MESSAGE,
-    REQUEST_RATING_MESSAGE
+    REQUEST_RATING_MESSAGE,
+    MESSAGE_COMMAND,
+    MESSAGE_NEW_DOCUMENT,
+    MESSAGE_DOCUMENT_SAVED,
+    MESSAGE_DOCUMENT_ERROR
 }
