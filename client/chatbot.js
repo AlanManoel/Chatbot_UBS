@@ -84,6 +84,9 @@ client.on('message_create', async message => {
         return;
       }
     }
+    if(message.body === "comandos"  && senderNumber === process.env.NUMBER_ADM){
+      await message.reply(messages.MESSAGE_COMMAND);
+    }
 
     if (message.body === "/enviarInformativo" && senderNumber === process.env.NUMBER_ADM) {
       await message.reply(messages.MESSAGE_REQUEST);
@@ -94,15 +97,15 @@ client.on('message_create', async message => {
         await infoMessage.reply(messages.MESSAGE_CONFIRMATION);
       });
     } else if (message.body === "/novoDocumento" && senderNumber == process.env.NUMBER_ADM) {
-      await message.reply("Envie o novo documento:");
+      await message.reply(messages.MESSAGE_NEW_DOCUMENT);
       client.once("message", async (media) => {
         if (media.hasMedia) {
           const docs = await media.downloadMedia();
           try {
             await saveNewFile(docs);
-            await message.reply(`O novo arquivo foi salvo e enviado ao Gemini com sucesso!`);
+            await message.reply(messages.MESSAGE_DOCUMENT_SAVED);
           } catch (error) {
-            await message.reply("Houve um erro ao processar o arquivo. Tente novamente.");
+            await message.reply(messages.MESSAGE_DOCUMENT_ERROR);
           }
         }
       });
