@@ -1,4 +1,4 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageTypes } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const { uploadToGemini, waitForFilesActive } = require('../useCase/sendFile.js');
 const { run } = require('../useCase/sendMessageToAI.js');
@@ -9,7 +9,8 @@ const { saveNumber } = require("../useCase/saveNumber.js");
 const messages = require("../messages/infoMessage.js");
 const { findUser } = require("../useCase/findUser.js");
 const { updateFeedback } = require('../useCase/updateFeedback.js');
-const { saveNewFile } = require('../useCase/saveNewFile.js')
+const { saveNewFile } = require('../useCase/saveNewFile.js');
+const { console } = require('inspector');
 
 const feedbackRequests = {};
 
@@ -54,21 +55,42 @@ client.on('message_create', async message => {
     if (!global.pendingRegistrations[senderNumber]) {
       global.pendingRegistrations[senderNumber] = true;
       await message.reply(messages.MESSAGE_GREETING);
-      client.sendMessage(senderNumber, messages.MESSAGE_ASKNAME);
+      client.sendMessage(senderNumber, messages.LGPD_CONSENT_MESSAGE);
 
-      const nameListener = async (nameMessage) => {
-        if (nameMessage.from === senderNumber && global.pendingRegistrations[senderNumber]) {
-          const userName = nameMessage.body.trim();
+      const consentListener = async (consentMessage) => {
+        if (consentMessage.from === senderNumber && global.pendingRegistrations[senderNumber]) {
+          const consentResponse = consentMessage.body.trim().toUpperCase();
+          if (consentResponse === '1' || consentResponse === "SIM") {
+            client.sendMessage(senderNumber, messages.MESSAGE_ASKNAME);
 
-          await saveNumber(userName, senderNumber);
-          await nameMessage.reply(`Prazer em conhecê-lo(a), ${userName}!\nAgora é só enviar suas dúvidas ou informações que deseja saber.`);
+            const nameListener = async (nameMessage) => {
+              if (nameMessage.from === senderNumber && global.pendingRegistrations[senderNumber]) {
+                const userName = nameMessage.body.trim();
 
-          delete global.pendingRegistrations[senderNumber];
-          client.removeListener('message_create', nameListener);
+                await saveNumber(userName, senderNumber);
+                await nameMessage.reply(`Prazer em conhecê-lo(a), ${userName}!\n${messages.MESSAGE_INTRO}`);
+
+                delete global.pendingRegistrations[senderNumber];
+                client.removeListener('message_create', nameListener);
+              }
+            };
+
+            client.on('message_create', nameListener);
+          } else if (consentResponse === '0' || consentResponse === "NÃO") {
+            await saveNumber(senderNumber, senderNumber);
+            await consentMessage.reply(messages.MESSAGE_INTRO);
+
+            delete global.pendingRegistrations[senderNumber];
+          } else {
+            await consentMessage.reply(messages.MESSAGE_INVALID_RESPONSE);
+            return;
+          }
+
+          client.removeListener('message_create', consentListener);
         }
       };
 
-      client.on('message_create', nameListener);
+      client.on('message_create', consentListener);
     }
   } else {
     if (feedbackRequests[senderNumber] === "feedbackPending" && message.body) {
@@ -84,8 +106,9 @@ client.on('message_create', async message => {
         return;
       }
     }
-    if(message.body === "comandos"  && senderNumber === process.env.NUMBER_ADM){
+    if (message.body === "comandos" && senderNumber === process.env.NUMBER_ADM) {
       await message.reply(messages.MESSAGE_COMMAND);
+      return;
     }
 
     if (message.body === "/enviarInformativo" && senderNumber === process.env.NUMBER_ADM) {
