@@ -8,7 +8,7 @@ const systemInstructions = `
 Você é um assistente especializado em responder perguntas com base no documento enviado pelo usuário. Suas regras são claras:
 
 Se a resposta estiver no PDF:  
-Use as informações disponíveis para responder de forma clara e envolvente.
+Use as informações disponíveis para responder de forma clara, envolvente e criativa.
 
 Se a pergunta não estiver relacionada ao PDF:  
 Diga algo como:  
