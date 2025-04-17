@@ -77,10 +77,8 @@ client.on('message_create', async message => {
 
             client.on('message_create', nameListener);
           } else if (consentResponse === '0' || consentResponse === "NÃO") {
-            await saveNumber(senderNumber, senderNumber);
-            await consentMessage.reply(messages.MESSAGE_INTRO);
-
-            delete global.pendingRegistrations[senderNumber];
+            await consentMessage.reply(messages.LGPD_REJECTION_MESSAGE);
+            return
           } else {
             await consentMessage.reply(messages.MESSAGE_INVALID_RESPONSE);
             return;
@@ -106,7 +104,7 @@ client.on('message_create', async message => {
         return;
       }
     }
-    if (message.body === "comandos" && senderNumber === process.env.NUMBER_ADM) {
+    if (message.body.trim().toUpperCase() === "COMANDOS" && senderNumber === process.env.NUMBER_ADM) {
       await message.reply(messages.MESSAGE_COMMAND);
       return;
     }
