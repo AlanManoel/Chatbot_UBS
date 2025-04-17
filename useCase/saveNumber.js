@@ -3,7 +3,7 @@ require('dotenv').config();
 const axios = require("axios");
 const url = process.env.API_URL + "/users/";
 
-const saveNumber = async (nome, telefone) => {
+const saveNumber = async (nome = '', telefone = '') => {
     const userData = {
         nome, telefone
     };
