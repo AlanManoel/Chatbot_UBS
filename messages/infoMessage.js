@@ -18,12 +18,15 @@ const MESSAGE_COMMAND =
 const MESSAGE_NEW_DOCUMENT = "📄 Envie o novo documento:";
 const MESSAGE_DOCUMENT_SAVED = "✅ O novo arquivo foi salvo e enviado com sucesso!";
 const MESSAGE_DOCUMENT_ERROR = "❌ Houve um erro ao processar o arquivo. Tente novamente.";
-const LGPD_CONSENT_MESSAGE = `Antes de continuarmos, precisamos da sua autorização para coletar alguns dados, como o seu nome, conforme a lei LGPD.\n
+const LGPD_CONSENT_MESSAGE = `🔐 *Consentimento LGPD Necessário*\n
+Antes de continuarmos, precisamos da sua autorização para coletar alguns dados, como o seu nome, conforme a Lei Geral de Proteção de Dados (LGPD).\n
 Por favor, digite uma opção:\n
-✅ *(1) SIM* - Para continuar e *fornecer* suas informações.\n
-❌ *(0) NÃO* - Para continuar *sem fornecer* suas informações.\n
-🔒 Seus dados estão seguros.`;
-
+✅ *(1) SIM* para continuar e fornecer suas informações.\n
+❌ *(0) NÂO* nesse caso, o uso do serviço não será possível.\n
+🔒 Seus dados estão seguros com a gente.`;
+const LGPD_REJECTION_MESSAGE = `❌ Você optou por *não fornecer* seus dados.\n
+Infelizmente, sem o seu consentimento, não é possível utilizar este serviço conforme as exigências da Lei Geral de Proteção de Dados (LGPD).\n
+Se mudar de ideia, é só voltar e digitar *(1)* para continuar.`;
 const MESSAGE_INVALID_RESPONSE = "Desculpe, não entendi sua resposta. \n\nPor favor, digite:\n✅ *1 ou SIM* para continuar.\n❌ *0 ou NÃO* para seguir sem fornecer informações.";
 
 
@@ -41,5 +44,6 @@ module.exports = {
     MESSAGE_DOCUMENT_SAVED,
     MESSAGE_DOCUMENT_ERROR,
     LGPD_CONSENT_MESSAGE,
-    MESSAGE_INVALID_RESPONSE
+    MESSAGE_INVALID_RESPONSE,
+    LGPD_REJECTION_MESSAGE
 }
