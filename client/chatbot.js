@@ -11,6 +11,7 @@ const { findUser } = require("../useCase/findUser.js");
 const { updateFeedback } = require('../useCase/updateFeedback.js');
 const { saveNewFile } = require('../useCase/saveNewFile.js');
 const { console } = require('inspector');
+const { createLog } = require('../useCase/createLog.js');
 
 const feedbackRequests = {};
 
@@ -107,9 +108,7 @@ client.on('message_create', async message => {
     if (message.body.trim().toUpperCase() === "COMANDOS" && senderNumber === process.env.NUMBER_ADM) {
       await message.reply(messages.MESSAGE_COMMAND);
       return;
-    }
-
-    if (message.body === "/enviarInformativo" && senderNumber === process.env.NUMBER_ADM) {
+    } else if (message.body === "/enviarInformativo" && senderNumber === process.env.NUMBER_ADM) {
       await message.reply(messages.MESSAGE_REQUEST);
 
       client.once("message", async (infoMessage) => {
@@ -135,7 +134,7 @@ client.on('message_create', async message => {
       if (message.body) {
         const chat = await client.getChatById(senderNumber); //Status digitando
         chat.sendStateTyping();
-
+        await createLog(user.id, message.body); //Criação do log do usuario
         const result = await run(message.body);
 
         try {
