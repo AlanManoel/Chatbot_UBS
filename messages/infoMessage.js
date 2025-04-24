@@ -22,13 +22,12 @@ const LGPD_CONSENT_MESSAGE = `🔐 *Consentimento LGPD Necessário*\n
 Antes de continuarmos, precisamos da sua autorização para coletar alguns dados, como o seu nome, conforme a Lei Geral de Proteção de Dados (LGPD).\n
 Por favor, digite uma opção:\n
 ✅ *(1) SIM* para continuar e fornecer suas informações.\n
-❌ *(0) NÂO* nesse caso, o uso do serviço não será possível.\n
+❌ *(0) NÃO* nesse caso, o uso do serviço não será possível.\n
 🔒 Seus dados estão seguros com a gente.`;
 const LGPD_REJECTION_MESSAGE = `❌ Você optou por *não fornecer* seus dados.\n
 Infelizmente, sem o seu consentimento, não é possível utilizar este serviço conforme as exigências da Lei Geral de Proteção de Dados (LGPD).\n
 Se mudar de ideia, é só voltar e digitar *(1)* para continuar.`;
-const MESSAGE_INVALID_RESPONSE = "Desculpe, não entendi sua resposta. \n\nPor favor, digite:\n✅ *1 ou SIM* para continuar.\n❌ *0 ou NÃO* para seguir sem fornecer informações.";
-
+const MESSAGE_INVALID_RESPONSE = "❗ *Resposta inválida.*\n\nPara continuar, você precisa digitar:\n✅ *1 ou SIM* para autorizar o uso dos seus dados conforme a LGPD.\n\nSem essa autorização, o uso do serviço não será possível.";
 
 module.exports = {
     MESSAGE_REQUEST,
