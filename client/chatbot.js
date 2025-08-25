@@ -12,6 +12,7 @@ const { updateFeedback } = require('../useCase/updateFeedback.js');
 const { saveNewFile } = require('../useCase/saveNewFile.js');
 const { console } = require('inspector');
 const { createLog } = require('../useCase/createLog.js');
+const { replaceDates } = require("../useCase/replaceDates.js");
 
 const feedbackRequests = {};
 
@@ -130,12 +131,15 @@ client.on('message_create', async message => {
         }
       });
 
+
     } else {
       if (message.body) {
         const chat = await client.getChatById(senderNumber); //Status digitando
         chat.sendStateTyping();
+        const perguntaAjustada = await replaceDates(message.body);
+
         await createLog(user.id, message.body); //Criação do log do usuario
-        const result = await run(message.body);
+        const result = await run(perguntaAjustada);
 
         try {
           await message.reply(result.trim());
@@ -152,5 +156,6 @@ client.on('message_create', async message => {
     }
   }
 });
+
 
 module.exports = { client }
