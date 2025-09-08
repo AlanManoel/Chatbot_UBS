@@ -35,7 +35,7 @@ npm install
 # Configure o arquivo .env
 GEMINI_API_KEY=your_api_key_here
 API_REST_URL=http://localhost:3000
-NUMBER_ADM=http://localhost:3000
+NUMBER_ADM=your_number
 
 # Inicie o chatbot
 npm start
